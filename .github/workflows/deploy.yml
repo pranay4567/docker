@@ -10,11 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout code
+      # Step 1: Checkout repo
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Build Docker image from my-docker-ec2-deploy folder
+      # Step 2: Build Docker image
       - name: Build Docker image
         run: |
           docker build -t myapp:latest my-docker-ec2-deploy/
@@ -28,7 +28,7 @@ jobs:
       # Step 4: Transfer Docker image to EC2
       - name: Transfer Docker image to EC2
         run: |
-          docker save myapp:latest | bzip2 | ssh -i pass.pem -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} 'bunzip2 | docker load'
+          docker save myapp:latest | ssh -i pass.pem -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} 'docker load'
 
       # Step 5: Run Docker container on EC2
       - name: Run Docker container on EC2
