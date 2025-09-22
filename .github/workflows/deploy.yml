@@ -14,10 +14,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Build Docker image
+      # Step 2: Build Docker image from my-docker-ec2-deploy folder
       - name: Build Docker image
         run: |
-          docker build -t myapp:latest .
+          docker build -t myapp:latest my-docker-ec2-deploy/
 
       # Step 3: Prepare SSH key
       - name: Prepare SSH key
@@ -33,7 +33,7 @@ jobs:
       # Step 5: Run Docker container on EC2
       - name: Run Docker container on EC2
         run: |
-          ssh -i ec2_key.pem -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+          ssh -i pass.pem -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
             docker stop myapp || true
             docker rm myapp || true
             docker run -d --name myapp -p 80:80 myapp:latest
