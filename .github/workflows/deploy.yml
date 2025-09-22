@@ -10,31 +10,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout repo
+      # Step 1: Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Build Docker image
+      # Step 2: Build Docker image locally in Actions
       - name: Build Docker image
         run: |
           docker build -t myapp:latest my-docker-ec2-deploy/
 
-      # Step 3: Prepare SSH key
-      - name: Prepare SSH key
+      # Step 3: Run Docker container on EC2
+      - name: Deploy Docker image to EC2
         run: |
-          echo "${{ secrets.EC2_SSH_KEY }}" > pass.pem
-          chmod 600 pass.pem
-
-      # Step 4: Transfer Docker image to EC2
-      - name: Transfer Docker image to EC2
-        run: |
-          docker save myapp:latest | ssh -i pass.pem -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} 'docker load'
-
-      # Step 5: Run Docker container on EC2
-      - name: Run Docker container on EC2
-        run: |
-          ssh -i pass.pem -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
-            docker stop myapp || true
-            docker rm myapp || true
-            docker run -d --name myapp -p 80:80 myapp:latest
-          EOF
+          docker save myapp:latest | ssh -i "${{ secrets.EC2_SSH_KEY }}" -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} 'docker load && docker stop myapp || true && docker rm myapp || true && docker run -d --name myapp -p 80:80 myapp:latest'
